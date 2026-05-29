@@ -43,4 +43,5 @@ struct ButtonTextModifier:ViewModifier{
     
 }
 
-let baseUrl = "http://localhost:8080/api/V1"
+//let baseUrl = "http://localhost:8080/api/V1"
+let baseUrl = "https://safaricom.co.ke/api/V1"

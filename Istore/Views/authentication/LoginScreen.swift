@@ -14,53 +14,79 @@ struct LoginScreen: View {
     
     var body: some View {
         @Bindable var authVmBindable = authVm
-        
-        VStack(spacing:20){
-            
-            TextFormField(
-                value: $authVmBindable.emailLoginText,
-                placeHolder: "Email",
-                validState: authVmBindable.emailLoginState,
-                image: "envelope.fill")
-            
-            TextFormField(
-                value: $authVmBindable.passwordLoginText,
-                placeHolder: "Password",
-                isSecure: true,
-                validState: authVmBindable.passwordLoginState,
-                image: "lock.fill")
-            
-        
-            NavigationLink(destination: {
-                ForgotPasswordScreen()
-            }){
-                NavLink(title: "", subtitle: "Forgot Password?")
-            }
-            
-            
-            Button {
-                Task{
-                   try await authVmBindable.login()
+        ZStack{
+            VStack(spacing:20){
+                
+                TextFormField(
+                    value: $authVmBindable.emailLoginText,
+                    placeHolder: "Email",
+                    validState: authVmBindable.emailLoginState,
+                    image: "envelope.fill")
+                
+                TextFormField(
+                    value: $authVmBindable.passwordLoginText,
+                    placeHolder: "Password",
+                    isSecure: true,
+                    validState: authVmBindable.passwordLoginState,
+                    image: "lock.fill")
+                
+                
+                NavigationLink(destination: {
+                    ForgotPasswordScreen()
+                }){
+                    NavLink(title: "", subtitle: "Forgot Password?")
                 }
-            } label: {
-                Text("Sign In")
-                    .buttonTextModifier(bgColor: authVmBindable.isLoginDetailsValid ? .black : .gray.opacity(0.4))
-            }.disabled(authVmBindable.isLoginDetailsValid ? false : true)
-
+                
+                
+                Button {
+                    Task{
+                        try await authVmBindable.login()
+                    }
+                } label: {
+                    Text("Sign In")
+                        .buttonTextModifier(bgColor: authVmBindable.isLoginDetailsValid ? .black : .gray.opacity(0.4))
+                }.disabled(authVmBindable.isLoginDetailsValid ? false : true)
+                
+                
+                Spacer()
+                
+                NavigationLink(destination: {
+                    RegisterScreen()
+                }){
+                    NavLink(title: "Dont have an account?", subtitle: "Sign Up",alignment: .center)
+                }
+                
+                
+            }.padding()
+                .frame(maxWidth: .infinity,maxHeight: .infinity)
+                .navigationTitle("Sign In")
+                .navigationBarBackButtonHidden()
+                .disabled(authVmBindable.isLogggingIn)
             
-            Spacer()
             
-            NavigationLink(destination: {
-                RegisterScreen()
-            }){
-                NavLink(title: "Dont have an account?", subtitle: "Sign Up",alignment: .center)
+            if(authVmBindable.isLogggingIn){
+                ZStack {
+                    Color.black.opacity(0.4)
+                        .ignoresSafeArea()
+                    
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            .scaleEffect(1.5)
+                        
+                        Text("Processing data...")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
+                    .padding(30)
+                    .background(Color(.systemGray6).opacity(0.2))
+                    .cornerRadius(16)
+                }
             }
             
-            
-        }.padding()
-        .frame(maxWidth: .infinity,maxHeight: .infinity)
-        .navigationTitle("Sign In")
-        .navigationBarBackButtonHidden()
+        }
+        
+        
         
     }
 }

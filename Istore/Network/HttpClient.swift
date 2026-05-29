@@ -6,38 +6,38 @@
 //
 import SwiftUI
 
-enum HttpMethod:String{
-    case GET="GET"
+enum HttpMethod: String {
+    case GET = "GET"
     case POST="POST"
-    case PATCH="PATCH"
-    case DELETE="DELETE"
     case PUT="PUT"
+    case DELETE="DELETE"
+    case PATCH="PATCH"
 }
 
 
-enum NetworkError:Error{
+enum NetworkErrors:Error{
     case invalidUrl
+    case inavlidData
     case invalidResponse
-    case invalidHttpStatusCode
-    case invalidData
+    case invalidResponseStatusCode
 }
 
 
 class HttpClient{
     
-    static let shared:HttpClient = HttpClient()
+    static var shared:HttpClient = HttpClient()
     
     
-    let configuration:URLSessionConfiguration = {
+    let configuration:URLSessionConfiguration={
         let config = URLSessionConfiguration.default
-        config.httpCookieStorage = HTTPCookieStorage.shared
-        
+    
+        config.httpCookieStorage=HTTPCookieStorage.shared
         return config
+        
     }()
     
     
     let session:URLSession
-    
     
     init() {
         self.session = URLSession(configuration: configuration)
@@ -45,41 +45,43 @@ class HttpClient{
     
     
     func httpRequest<T:Decodable>(
-        url:URL ,
+        url:URL,
         method:HttpMethod,
         body:Data?=nil,
         headers:[String:String]?=nil
-    ) async throws->(data:T,response:HTTPURLResponse){
+    )async throws->(data:T, response:HTTPURLResponse){
         
       var request = URLRequest(url: url)
         request.httpMethod = method.rawValue
         request.httpBody = body
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        
         if let headers = headers{
-            for (key, value) in headers{
+            for (key,value ) in headers{
                 request.setValue(value, forHTTPHeaderField: key)
             }
         }
         
+        
         do{
-            let (data, response) = try await session.data(for: request)
+            let (data ,response) = try await session.data(for: request)
             
-            print("url is:   \(url)")
-            print("method is:  \(method)")
-            guard let response = response as? HTTPURLResponse else{
-                throw NetworkError.invalidHttpStatusCode
+            guard let response = response as? HTTPURLResponse else {
+                throw NetworkErrors.invalidResponseStatusCode
             }
             
             let responseData = try JSONDecoder().decode(T.self, from: data)
             return (responseData,response)
             
         }catch{
-            print("error is \(error)")
             throw error
         }
+    
+        
         
     }
+    
+    
+    
     
 }

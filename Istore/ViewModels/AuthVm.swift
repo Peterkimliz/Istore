@@ -15,7 +15,10 @@ class AuthVm{
     var nameRegisterState:ValidState = .empty
     var emailRegisterState:ValidState = .empty
     var passwordRegisterState:ValidState = .empty
+    var emailForgetState:ValidState = .empty
     var isRegisterDetailsValid:Bool = false
+    var isForgetDetailsValid:Bool = false
+    var isLogggingIn:Bool = false
     
     var emailLoginText:String = ""{
         didSet{
@@ -77,6 +80,23 @@ class AuthVm{
         }
     }
     
+    
+    var emailForgetText:String = ""{
+        didSet{
+            emailForgetState = emailForgetText.isEmpty ? .empty : !emailForgetText
+                .contains("@") ? .invalid: .valid
+            
+            
+
+            
+            /*checkIfLoginIsValid*/()
+        }
+    }
+    
+    
+    
+    
+    
     func checkIfRegisterIsValid(){
         isRegisterDetailsValid = (emailRegisterState == .valid && passwordRegisterState == .valid && nameRegisterState == .valid)
     }
@@ -85,8 +105,9 @@ class AuthVm{
     
     func login()async throws{
         
+        isLogggingIn = true
         guard let url = URLComponents(string: "\(baseUrl)/auth/login")?.url else{
-            throw NetworkError.invalidUrl
+            throw NetworkErrors.invalidUrl
         }
         print("url is :\(url)")
         
@@ -97,15 +118,20 @@ class AuthVm{
         do{
             requestBody = try JSONEncoder().encode(loginRequest)
             
+//            isLogggingIn=false
+            
+            
         }catch{
             print("Error is \(error)")
-            throw NetworkError.invalidData
+            isLogggingIn = false
+            throw NetworkErrors.inavlidData
         }
         
         
         
         
         do{
+            
             let (data,response) = try await HttpClient.shared.httpRequest(
                 url: url,method: HttpMethod.POST,body: requestBody)
             as (ValidateResponse, HTTPURLResponse)
@@ -113,6 +139,7 @@ class AuthVm{
             print("Data is \(data)")
             
         }catch{
+            isLogggingIn = false
             print("error \(error)")
            throw error
         }
